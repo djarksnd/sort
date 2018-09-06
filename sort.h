@@ -40,7 +40,7 @@ namespace sort
 				return;
 			}
 			
-			auto div = length / 3;
+			const auto div = length / 3;
 			RandomAccessIterator pivot1 = first + div;
 			RandomAccessIterator pivot2 = last - div;
 
@@ -90,9 +90,9 @@ namespace sort
 			sort::swap(*pivot1, *less);
 			sort::swap(*pivot2, *great);
 
-			auto length1 = less - first;
-			auto length2 = great - (less + 1);
-			auto length3 = last - (great + 1);
+			const auto length1 = less - first;
+			const auto length2 = great - (less + 1);
+			const auto length3 = last - (great + 1);
 
 			if (length1 > length2)
 			{
