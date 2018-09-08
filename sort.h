@@ -5,9 +5,9 @@ namespace sort
 	template<typename T>
 	void swap(T& left, T& right)
 	{
-		const T temp = left;
-		left = right;
-		right = temp;
+		T temp = std::move(left);
+		left = std::move(right);
+		right = std::move(temp);
 	}
 
 	template<typename RandomAccessIterator, typename Compare>
