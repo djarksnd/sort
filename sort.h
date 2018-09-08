@@ -2,6 +2,14 @@
 
 namespace sort
 {
+	template<typename T>
+	void swap(T& left, T& right)
+	{
+		const T temp = left;
+		left = right;
+		right = temp;
+	}
+
 	template<typename RandomAccessIterator, typename Compare>
 	void insertionSort(const RandomAccessIterator first, const RandomAccessIterator last, const Compare cmp)
 	{
@@ -15,14 +23,6 @@ namespace sort
 				sort::swap(*j, *(j - 1));
 			}
 		}
-	}
-
-	template<typename T>
-	void swap(T& left, T& right)
-	{
-		const T temp = left;
-		left = right;
-		right = temp;
 	}
 
 	template<typename RandomAccessIterator, typename Compare>
