@@ -2,14 +2,6 @@
 
 namespace sort
 {
-	template<typename T>
-	void swap(T& left, T& right)
-	{
-		T temp = left;
-		left = right;
-		right = temp;
-	}
-
 	template<typename RandomAccessIterator, typename Compare>
 	void insertionSort(const RandomAccessIterator first, const RandomAccessIterator last, const Compare cmp)
 	{
@@ -23,6 +15,14 @@ namespace sort
 				sort::swap(*j, *(j - 1));
 			}
 		}
+	}
+
+	template<typename T>
+	void swap(T& left, T& right)
+	{
+		const T temp = left;
+		left = right;
+		right = temp;
 	}
 
 	template<typename RandomAccessIterator, typename Compare>
@@ -39,7 +39,7 @@ namespace sort
 				sort::insertionSort(first, last, cmp);
 				return;
 			}
-			
+
 			const auto div = length / 3;
 			RandomAccessIterator pivot1 = first + div;
 			RandomAccessIterator pivot2 = last - div;
@@ -90,22 +90,30 @@ namespace sort
 			sort::swap(*pivot1, *less);
 			sort::swap(*pivot2, *great);
 
+			pivot1 = less;
+			while ((pivot1 + 1) != great && !cmp(*pivot1, *(pivot1 + 1))) 
+				++pivot1;
+		
+			pivot2 = great;
+			while ((pivot2 + 1) != last && !cmp(*pivot2, *(pivot2 + 1))) 
+				++pivot2;
+
 			const auto length1 = less - first;
-			const auto length2 = great - (less + 1);
-			const auto length3 = last - (great + 1);
+			const auto length2 = great - (pivot1 + 1);
+			const auto length3 = last - (pivot2 + 1);
 
 			if (length1 > length2)
 			{
 				if (length3 > length1)
 				{
 					sort::_dualPivotQuickSort(first, less, cmp);
-					sort::_dualPivotQuickSort(less + 1, great, cmp);
-					first = great + 1;
+					sort::_dualPivotQuickSort(pivot1 + 1, great, cmp);
+					first = pivot2 + 1;
 				}
 				else
 				{
-					sort::_dualPivotQuickSort(less + 1, great, cmp);
-					sort::_dualPivotQuickSort(great + 1, last, cmp);
+					sort::_dualPivotQuickSort(pivot1 + 1, great, cmp);
+					sort::_dualPivotQuickSort(pivot2 + 1, last, cmp);
 					last = less;
 				}
 			}
@@ -114,14 +122,14 @@ namespace sort
 				if (length3 > length2)
 				{
 					sort::_dualPivotQuickSort(first, less, cmp);
-					sort::_dualPivotQuickSort(less + 1, great, cmp);
-					first = great + 1;
+					sort::_dualPivotQuickSort(pivot1 + 1, great, cmp);
+					first = pivot2 + 1;
 				}
 				else
 				{
 					sort::_dualPivotQuickSort(first, less, cmp);
-					sort::_dualPivotQuickSort(great + 1, last, cmp);
-					first = less + 1;
+					sort::_dualPivotQuickSort(pivot2 + 1, last, cmp);
+					first = pivot1 + 1;
 					last = great;
 				}
 			}
