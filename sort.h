@@ -5,9 +5,9 @@ namespace sort
 	template<typename T>
 	void swap(T& left, T& right)
 	{
-		T temp = std::move(left);
-		left = std::move(right);
-		right = std::move(temp);
+		T temp = left;
+		left = right;
+		right = temp;
 	}
 
 	template<typename RandomAccessIterator, typename Compare>
@@ -34,7 +34,7 @@ namespace sort
 			if (length <= 1)
 				return;
 
-			if (length < 27)
+			if (length < 16)
 			{
 				sort::insertionSort(first, last, cmp);
 				return;
@@ -65,20 +65,34 @@ namespace sort
 			{
 				if (cmp(*i, *pivot1))
 				{
-					sort::swap(*i, *less);
+					if (i != less)
+					{
+						sort::swap(*i, *less);
+					}
+
 					++less;
 				}
 				else if (!cmp(*i, *pivot2))
 				{
 					while (cmp(*pivot2, *great) && (i - great) < 0)
+					{
 						--great;
+					}
 
-					sort::swap(*i, *great);
+					if (i != great)
+					{
+						sort::swap(*i, *great);
+					}
+					
 					--great;
 
 					if (cmp(*i, *pivot1))
 					{
-						sort::swap(*i, *less);
+						if (i != less)
+						{
+							sort::swap(*i, *less);
+						}
+						
 						++less;
 					}
 				}
@@ -91,12 +105,32 @@ namespace sort
 			sort::swap(*pivot2, *great);
 
 			pivot1 = less;
-			while ((pivot1 + 1) != great && !cmp(*pivot1, *(pivot1 + 1))) 
-				++pivot1;
-		
+			for (RandomAccessIterator i = less + 1; great - i > 0; ++i)
+			{
+				// *i == *less
+				if (!cmp(*less, *i))
+				{
+					++pivot1;
+					if (i != pivot1)
+					{
+						sort::swap(*i, *pivot1);
+					}
+				}
+			}
+
 			pivot2 = great;
-			while ((pivot2 + 1) != last && !cmp(*pivot2, *(pivot2 + 1))) 
-				++pivot2;
+			for (RandomAccessIterator i = great + 1; last - i > 0; ++i)
+			{
+				// *i == *great
+				if (!cmp(*great, *i))
+				{
+					++pivot2;
+					if (i != pivot2)
+					{
+						sort::swap(*i, *pivot2);
+					}
+				}
+			}
 
 			const auto length1 = less - first;
 			const auto length2 = great - (pivot1 + 1);
