@@ -187,13 +187,16 @@ namespace sort
 				pivot2 = p4;
 
 			if (pivot1 != first)
+			{
 				sort::swap(*pivot1, *first);
+				pivot1 = first;
+			}
 			if (pivot2 != last - 1)
+			{
 				sort::swap(*pivot2, *(last - 1));
+				pivot2 = last - 1;
+			}
 		}
-
-		pivot1 = first;
-		pivot2 = last - 1;
 
 		RandomAccessIterator less = pivot1 + 1;
 		RandomAccessIterator great = pivot2 - 1;
@@ -241,7 +244,7 @@ namespace sort
 		--less;
 		++great;
 
-		if (pivot1 != less);
+		if (pivot1 != less)
 		{
 			sort::swap(*pivot1, *less);
 			pivot1 = less;
