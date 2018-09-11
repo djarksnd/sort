@@ -26,43 +26,170 @@ namespace sort
 	}
 
 	template<typename RandomAccessIterator, typename Compare>
+	inline size_t _sort3(
+		const RandomAccessIterator first, 
+		const RandomAccessIterator second, 
+		const RandomAccessIterator third, 
+		const Compare cmp)
+	{
+		size_t numSwap = 0;
+		if (!cmp(*second, *first))
+		{
+			if (!cmp(*third, *second))
+				return numSwap;
+
+			sort::swap(*second, *third);
+			numSwap = 1;
+
+			if (cmp(*second, *first))
+			{
+				sort::swap(*first, *second);
+				numSwap = 2;
+			}
+
+			return numSwap;
+		}
+
+		if (cmp(*third, *second))
+		{
+			sort::swap(*first, *third);
+			numSwap = 1;
+			return numSwap;
+		}
+		
+		sort::swap(*first, *second);
+		numSwap = 1;
+		
+		if (cmp(*third, *second))
+		{
+			sort::swap(*second, *third);
+			numSwap = 2;
+		}
+
+		return numSwap;
+	}
+
+	template<typename RandomAccessIterator, typename Compare>
+	inline size_t _sort4(
+		const RandomAccessIterator first, 
+		const RandomAccessIterator second, 
+		const RandomAccessIterator third, 
+		const RandomAccessIterator fourth, const Compare cmp)
+	{
+		size_t numSwap = sort::_sort3(first, second, third, cmp);
+		if (cmp(*fourth, *third))
+		{
+			sort::swap(*third, *fourth);
+			++numSwap;
+			if (cmp(*third, *second))
+			{
+				sort::swap(*second, *third);
+				++numSwap;
+				if (cmp(*second, *first))
+				{
+					sort::swap(*first, *second);
+					++numSwap;
+				}
+			}
+		}
+		return numSwap;
+	}
+
+	template<typename RandomAccessIterator, typename Compare>
+	inline size_t _sort5(
+		const RandomAccessIterator first, 
+		const RandomAccessIterator second, 
+		const RandomAccessIterator third,
+		const RandomAccessIterator fourth, 
+		const RandomAccessIterator fifth, 
+		const Compare cmp)
+	{
+		size_t numSwap = sort::_sort4(first, second, third, fourth, cmp);
+		if (cmp(*fifth, *fourth))
+		{
+			sort::swap(*fourth, *fifth);
+			++numSwap;
+			if (cmp(*fourth, *third))
+			{
+				sort::swap(*third, *fourth);
+				++numSwap;
+				if (cmp(*third, *second))
+				{
+					sort::swap(*second, *third);
+					++numSwap;
+					if (cmp(*second, *first))
+					{
+						sort::swap(*first, *second);
+						++numSwap;
+					}
+				}
+			}
+		}
+
+		return numSwap;
+	}
+
+	template<typename RandomAccessIterator, typename Compare>
 	void _dualPivotQuickSort(RandomAccessIterator first, RandomAccessIterator last, const Compare cmp)
 	{
 	dualPivotQuickSortLoop:
 		auto length = last - first;
 
-		if (length <= 1)
+		switch (length)
 		{
+		case 0:
+		case 1:
 			return;
-		}
-		else if (length == 2)
-		{
+		case 2:
 			if (cmp(*(first + 1), *first))
 			{
 				sort::swap(*(first + 1), *first);
 			}
-
+			return;
+		case 3:
+			_sort3(first, first + 1, first + 2, cmp);
+			return;
+		case 4:
+			_sort4(first, first + 1, first + 2, first + 3, cmp);
+			return;
+		case 5:
+			_sort5(first, first + 1, first + 2, first + 3, first + 4, cmp);
 			return;
 		}
-		else if (length < 16)
+
+		if (length < 8)
 		{
 			sort::insertionSort(first, last, cmp);
 			return;
 		}
 
-		const auto div = length / 3;
-		RandomAccessIterator pivot1 = first + div;
-		RandomAccessIterator pivot2 = last - div;
+		RandomAccessIterator pivot1;
+		RandomAccessIterator pivot2;
+		size_t numSwap = 0;
 
-		if (cmp(*pivot1, *pivot2))
 		{
-			sort::swap(*pivot1, *first);
-			sort::swap(*pivot2, *(last - 1));
-		}
-		else
-		{
-			sort::swap(*pivot2, *first);
-			sort::swap(*pivot1, *(last - 1));
+			const auto offset = length / 4;
+			RandomAccessIterator p1 = first;
+			RandomAccessIterator p2 = p1 + offset;
+			RandomAccessIterator p3 = p2 + offset;
+			RandomAccessIterator p4 = p3 + offset;
+			RandomAccessIterator p5 = last - 1;
+			numSwap = _sort5(p1, p2, p3, p4, p5, cmp);
+
+			if (!cmp(*p2, *p3))
+				pivot1 = p1;
+			else
+				pivot1 = p2;
+
+			if (!cmp(*p3, *p4))
+				pivot2 = p5;
+			else
+				pivot2 = p4;
+
+			if (pivot1 != first)
+				sort::swap(*pivot1, *first);
+			if (pivot2 != last - 1)
+				sort::swap(*pivot2, *(last - 1));
 		}
 
 		pivot1 = first;
@@ -78,6 +205,7 @@ namespace sort
 				if (i != less)
 				{
 					sort::swap(*i, *less);
+					++numSwap;
 				}
 
 				++less;
@@ -92,6 +220,7 @@ namespace sort
 				if (i != great)
 				{
 					sort::swap(*i, *great);
+					++numSwap;
 				}
 
 				--great;
@@ -101,6 +230,7 @@ namespace sort
 					if (i != less)
 					{
 						sort::swap(*i, *less);
+						++numSwap;
 					}
 
 					++less;
@@ -111,11 +241,17 @@ namespace sort
 		--less;
 		++great;
 
-		sort::swap(*pivot1, *less);
-		sort::swap(*pivot2, *great);
-
-		pivot1 = less;
-		pivot2 = great;
+		if (pivot1 != less);
+		{
+			sort::swap(*pivot1, *less);
+			pivot1 = less;
+		}
+		
+		if (pivot2 != great)
+		{
+			sort::swap(*pivot2, *great);
+			pivot2 = great;
+		}
 
 		for (RandomAccessIterator i = less + 1; i < great; ++i)
 		{
@@ -126,6 +262,7 @@ namespace sort
 				if (i != pivot1)
 				{
 					sort::swap(*i, *pivot1);
+					++numSwap;
 				}
 			}
 		}
@@ -139,8 +276,17 @@ namespace sort
 				if (i != pivot2)
 				{
 					sort::swap(*i, *pivot2);
+					++numSwap;
 				}
 			}
+		}
+
+		if (numSwap == 0)
+		{
+			sort::insertionSort(first, less, cmp);
+			sort::insertionSort(pivot1 + 1, great, cmp);
+			sort::insertionSort(pivot2 + 1, last, cmp);
+			return;
 		}
 
 		const auto length1 = less - first;
