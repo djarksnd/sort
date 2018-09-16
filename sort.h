@@ -116,48 +116,59 @@ namespace sort
 	{
 		while (first < last)
 		{
-			auto length = last - first;
+			auto count = last - first;
 
-			switch (length)
+			if (count > 32)
 			{
-			case 1:
-				return;
-			case 2:
-				if (cmp(*(first + 1), *first))
-					sort::swap(*(first + 1), *first);
-				return;
-			case 3:
-				sort::_sort3(first, first + 1, first + 2, cmp);
-				return;
-			case 4:
-				sort::_sort4(first, first + 1, first + 2, first + 3, cmp);
-				return;
-			case 5:
-				sort::_sort5(first, first + 1, first + 2, first + 3, first + 4, cmp);
-				return;
-			}
+				RandomAccessIterator pivot1;
+				RandomAccessIterator pivot2;
 
-			if (length <= 32)
-			{
-				sort::insertionSort(first, last, cmp);
-				return;
-			}
-			else
-			{
-				auto offset = length / 4;
-				RandomAccessIterator pivot1 = first + offset;
-				RandomAccessIterator middel = pivot1 + offset;
-				RandomAccessIterator pivot2 = middel + offset;
+				if (count > 40)
+				{
+					const size_t numSampes = 14;
+					const auto offset = (count + 1) / (numSampes - 1);
+				
+					RandomAccessIterator samples[numSampes] = {
+						first,
+						first + offset,
+						first + (offset * 2),
+						first + (offset * 3),
+						first + (offset * 4),
+						first + (offset * 5),
+						first + (offset * 6),
+						first + (offset * 7),
+						first + (offset * 8),
+						first + (offset * 9),
+						first + (offset * 10),
+						first + (offset * 11),
+						first + (offset * 12),
+						last - 1};
 
-				sort::_sort5(first, pivot1, middel, pivot2, last - 1, cmp);
+					for (size_t i = 1; i < numSampes; ++i)
+					{
+						for (size_t j = i; j > 0; --j)
+						{
+							if (!cmp(*(samples[j]), *(samples[j - 1])))
+								break;
 
-				if (cmp(*first, *pivot1))
-					sort::swap(*pivot1, *first);
+							sort::swap(*(samples[j]), *(samples[j - 1]));
+						}
+					}
 
-				if (cmp(*middel, *pivot2))
-					sort::swap(*pivot2, *(last - 1));
+					pivot1 = samples[4];
+					pivot2 = samples[9];
+				}
 				else
-					sort::swap(*middel, *(last - 1));
+				{
+					const auto offset = (count + 1) >> 2;
+					pivot1 = first + offset;
+					pivot2 = pivot1 + offset + offset;
+
+					sort::_sort5(first, pivot1, pivot1 + offset, pivot2, last - 1, cmp);
+				}
+
+				sort::swap(*pivot1, *first);
+				sort::swap(*pivot2, *(last - 1));
 
 				pivot1 = first;
 				pivot2 = last - 1;
@@ -199,36 +210,31 @@ namespace sort
 				pivot1 = less;
 				pivot2 = great;
 
-				if (length > 256)
+				for (RandomAccessIterator i = less + 1; i < great; ++i)
 				{
-					for (RandomAccessIterator i = less + 1; i < great; ++i)
-					{
-						if (!cmp(*less, *i))
-						{
-							++pivot1;
-							sort::swap(*i, *pivot1);
-						}
-					}
+					if (cmp(*less, *i))
+						break;
 
-					for (RandomAccessIterator i = great + 1; i < last; ++i)
-					{
-						if (!cmp(*great, *i))
-						{
-							++pivot2;
-							sort::swap(*i, *pivot2);
-						}
-					}
+					++pivot1;
 				}
 
-				const auto length1 = less - first;
-				const auto length2 = great - (pivot1 + 1);
-				const auto length3 = last - (pivot2 + 1);
+				for (RandomAccessIterator i = great + 1; i < last; ++i)
+				{
+					if (cmp(*great, *i))
+						break;
 
-				if (length1 > length2)
+					++pivot2;
+				}
+
+				const auto count1 = less - first;
+				const auto count2 = great - (pivot1 + 1);
+				const auto count3 = last - (pivot2 + 1);
+
+				if (count1 > count2)
 				{
 					sort::_dualPivotQuickSort(pivot1 + 1, great, cmp);
 
-					if (length3 > length1)
+					if (count3 > count1)
 					{
 						sort::_dualPivotQuickSort(first, less, cmp);
 						first = pivot2 + 1;
@@ -243,7 +249,7 @@ namespace sort
 				{
 					sort::_dualPivotQuickSort(first, less, cmp);
 
-					if (length3 > length2)
+					if (count3 > count2)
 					{
 						sort::_dualPivotQuickSort(pivot1 + 1, great, cmp);
 						first = pivot2 + 1;
@@ -255,6 +261,36 @@ namespace sort
 						last = great;
 					}
 				}
+			}
+			else if (count > 5)
+			{
+				sort::insertionSort(first, last, cmp);
+				return;
+			}
+			else if (count == 5)
+			{
+				sort::_sort5(first, first + 1, first + 2, first + 3, first + 4, cmp);
+				return;
+			}
+			else if (count == 4)
+			{
+				sort::_sort4(first, first + 1, first + 2, first + 3, cmp);
+				return;
+			}
+			else if (count == 3)
+			{
+				sort::_sort3(first, first + 1, first + 2, cmp);
+				return;
+			}
+			else if (count == 2)
+			{
+				if (cmp(*(first + 1), *first))
+					sort::swap(*(first + 1), *first);
+				return;
+			}
+			else
+			{
+				return;
 			}
 		}
 	}
